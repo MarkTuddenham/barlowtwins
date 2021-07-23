@@ -21,6 +21,8 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 
+from imagenet_hdf5 import ImageNetHDF5
+
 from orth_optim import orthogonalise
 
 parser = argparse.ArgumentParser(description='Barlow Twins Training')
@@ -46,7 +48,7 @@ parser.add_argument('--print-freq', default=100, type=int, metavar='N',
                     help='print frequency')
 parser.add_argument('--checkpoint-dir', default='./checkpoint/', type=Path,
                     metavar='DIR', help='path to checkpoint directory')
-parser.add_argument('--orht', '-o', action='store_true', type=bool,
+parser.add_argument('--orth', '-o', action='store_true',
                     help='Set orth flag on the optimiser')
 
 
@@ -115,7 +117,8 @@ def main_worker(gpu, args):
     else:
         start_epoch = 0
 
-    dataset = torchvision.datasets.ImageFolder(args.data / 'train', Transform())
+    # dataset = torchvision.datasets.ImageFolder(args.data / 'train', Transform())
+    dataset = ImageNetHDF5(root=f'{args.data}/train', transform=Transform())
     sampler = torch.utils.data.distributed.DistributedSampler(dataset)
     assert args.batch_size % args.world_size == 0
     per_device_batch_size = args.batch_size // args.world_size
