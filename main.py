@@ -21,6 +21,8 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 
+from orth_optim import orthogonalise
+
 parser = argparse.ArgumentParser(description='Barlow Twins Training')
 parser.add_argument('data', type=Path, metavar='DIR',
                     help='path to dataset')
@@ -44,6 +46,8 @@ parser.add_argument('--print-freq', default=100, type=int, metavar='N',
                     help='print frequency')
 parser.add_argument('--checkpoint-dir', default='./checkpoint/', type=Path,
                     metavar='DIR', help='path to checkpoint directory')
+parser.add_argument('--orht', '-o', action='store_true', type=bool,
+                    help='Set orth flag on the optimiser')
 
 
 def main():
@@ -98,7 +102,8 @@ def main_worker(gpu, args):
     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[gpu])
     optimizer = LARS(parameters, lr=0, weight_decay=args.weight_decay,
                      weight_decay_filter=exclude_bias_and_norm,
-                     lars_adaptation_filter=exclude_bias_and_norm)
+                     lars_adaptation_filter=exclude_bias_and_norm,
+                     orth=args.orth)
 
     # automatically resume from checkpoint if it exists
     if (args.checkpoint_dir / 'checkpoint.pth').is_file():
@@ -221,6 +226,7 @@ class BarlowTwins(nn.Module):
         return loss
 
 
+@orthogonalise
 class LARS(optim.Optimizer):
     def __init__(self, params, lr, weight_decay=0, momentum=0.9, eta=0.001,
                  weight_decay_filter=None, lars_adaptation_filter=None):
