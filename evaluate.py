@@ -19,6 +19,10 @@ from torchvision import models, datasets, transforms
 import torch
 import torchvision
 
+from orth_optim import hook
+
+hook()
+
 parser = argparse.ArgumentParser(description='Evaluate resnet50 features on ImageNet')
 parser.add_argument('data', type=Path, metavar='DIR',
                     help='path to dataset')
@@ -42,6 +46,8 @@ parser.add_argument('--lr-classifier', default=0.3, type=float, metavar='LR',
                     help='classifier base learning rate')
 parser.add_argument('--weight-decay', default=1e-6, type=float, metavar='W',
                     help='weight decay')
+parser.add_argument('--orth', '-o', default=false, type=book, metavar='W', action='store_true',
+                    help='use orth sgd')
 parser.add_argument('--print-freq', default=100, type=int, metavar='N',
                     help='print frequency')
 parser.add_argument('--checkpoint-dir', default='./checkpoint/lincls/', type=Path,
@@ -100,7 +106,7 @@ def main_worker(gpu, args):
     param_groups = [dict(params=classifier_parameters, lr=args.lr_classifier)]
     if args.weights == 'finetune':
         param_groups.append(dict(params=model_parameters, lr=args.lr_backbone))
-    optimizer = optim.SGD(param_groups, 0, momentum=0.9, weight_decay=args.weight_decay)
+    optimizer = optim.SGD(param_groups, 0, momentum=0.9, weight_decay=args.weight_decay, orth=args.orth)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
 
     # automatically resume from checkpoint if it exists
