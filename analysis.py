@@ -38,9 +38,9 @@ def plot_losses():
   ax.spines['top'].set_color(None)
   ax.set_xlabel('Step /100s')
   ax.set_ylabel('Loss')
-  ax.plot(their_normal_losses, label='Their normal run')
-  ax.plot(our_normal_losses, label='Our normal run')
-  ax.plot(our_orth_losses,  label='Our orth run')
+  ax.plot(their_normal_losses, label='Original author\'s run')
+  ax.plot(our_normal_losses, label='Ours - LARS')
+  ax.plot(our_orth_losses,  label='Ours - Orthogonalised LARS')
   ax.legend()
 
   fig.savefig('plots/losses' + pic_type, bbox_inches='tight')
