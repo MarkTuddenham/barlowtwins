@@ -118,7 +118,7 @@ def main_worker(gpu, args):
         start_epoch = 0
 
     # dataset = torchvision.datasets.ImageFolder(args.data / 'train', Transform())
-    dataset = ImageNetHDF5(root=f'{args.data}/train', transform=Transform())
+    dataset = ImageNetHDF5(root=f'{args.data}/train', cache_size=25, transform=Transform())
     sampler = torch.utils.data.distributed.DistributedSampler(dataset)
     assert args.batch_size % args.world_size == 0
     per_device_batch_size = args.batch_size // args.world_size
